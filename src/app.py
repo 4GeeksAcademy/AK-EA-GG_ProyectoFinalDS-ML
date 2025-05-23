@@ -11,10 +11,10 @@ import pickle
 # =====================
 # Cargar modelo y encoder
 # =====================
-with open('best_xgb_final.pkl', 'rb') as f:
+with open('/workspaces/AK-EA-GG_ProyectoFinalDS-ML/models/best_xgb_final.pkl', 'rb') as f:
     model = pickle.load(f)
 
-with open('label_encoder_sub_grade.pkl', 'rb') as f:
+with open('/workspaces/AK-EA-GG_ProyectoFinalDS-ML/models/label_encoder_sub_grade.pkl', 'rb') as f:
     le_sub_grade = pickle.load(f)
 
 # =====================
@@ -64,19 +64,28 @@ else:
     pub_rec_bankruptcies = st.number_input('Bancarrotas públicas', min_value=0, max_value=5, step=1)
     issue_year = st.selectbox('Año de emisión', options=[2015, 2016])
     issue_month = st.selectbox('Mes de emisión', options=list(range(1, 13)))
+    earliest_cr_line_year = st.number_input('Año de la primera línea de crédito', min_value=1950, max_value=2025, step=1)
+    earliest_cr_line_month = st.selectbox('Mes de la primera línea de crédito', options=list(range(1, 13)))
     sub_grade = st.selectbox('Sub-Grado crediticio', options=le_sub_grade.classes_)
     term = st.selectbox('Plazo del préstamo (meses)', options=[36, 60])
+    zip_code = st.number_input('Registros públicos negativos', min_value=10000, max_value=99999, step=1)
     emp_length = st.slider('Años de experiencia laboral', min_value=0, max_value=10)
     initial_list_status = st.selectbox('Estado inicial del listado', options=['w', 'f'])
-    home_ownership = st.selectbox('Tipo de tenencia de vivienda', options=['RENT', 'OWN', 'MORTGAGE'])
+    home_ownership = st.selectbox('Tipo de tenencia de vivienda', options=['ANY','RENT', 'OWN', 'MORTGAGE'])
+    verifiaction_status = st.selectbox('Estado de verificación', options=['Not Verified','Source Verified', 'Verified'])
+    purpose = st.selectbox('Estado de verificación', options=['car','credit_card', 'debt_consolidation','home_improvement',''])
 
     if st.button('Predecir Riesgo'):
         sub_grade_encoded = le_sub_grade.transform([sub_grade])[0]
         issue_d_scaled = issue_year + (issue_month - 1) / 12
+        earliest_cr_line_scaled = earliest_cr_line_year + (earliest_cr_line_month - 1) / 12
 
         input_data = pd.DataFrame([{
             'loan_amnt': loan_amnt,
+            'term': term,
             'int_rate': int_rate,
+            'sub_grade': sub_grade_encoded,
+            'emp_length': emp_length,
             'annual_inc': annual_inc,
             'dti': dti,
             'open_acc': open_acc,
@@ -84,16 +93,19 @@ else:
             'revol_bal': revol_bal,
             'revol_util': revol_util,
             'total_acc': total_acc,
+            'initial_list_status': 0 if initial_list_status == 'w' else 1,
             'mort_acc': mort_acc,
             'pub_rec_bankruptcies': pub_rec_bankruptcies,
-            'term': term,
-            'emp_length': emp_length,
-            'initial_list_status': 0 if initial_list_status == 'w' else 1,
-            'sub_grade': sub_grade_encoded,
+            'zip_code': zip_code,
+            'earliest_cr_line_scaled': earliest_cr_line_scaled,
             'issue_d_scaled': issue_d_scaled,
+            'home_ownership_ANY': int(home_ownership == 'ANY'),
             'home_ownership_MORTGAGE': int(home_ownership == 'MORTGAGE'),
             'home_ownership_OWN': int(home_ownership == 'OWN'),
             'home_ownership_RENT': int(home_ownership == 'RENT'),
+            'verification_status_Not Verified': int(home_ownership == 'Not Verified'),
+            'verification_status_Source Verified': int(home_ownership == 'Source Verified'),
+            'verification_status_Verified': int(home_ownership == 'Verified'),
         }])
 
         pred_prob = model.predict_proba(input_data)[0][1]
