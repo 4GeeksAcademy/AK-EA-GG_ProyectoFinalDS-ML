@@ -1,8 +1,3 @@
-from utils import db_connect
-engine = db_connect()
-
-# your code here
-
 import streamlit as st
 import numpy as np
 import pandas as pd
@@ -11,10 +6,10 @@ import pickle
 # =====================
 # Cargar modelo y encoder
 # =====================
-with open('/workspaces/AK-EA-GG_ProyectoFinalDS-ML/models/best_xgb_final.pkl', 'rb') as f:
+with open('/workspaces/AK-EA-GG_ProyectoFinalDS-ML/src/best_xgb_final.pkl', 'rb') as f:
     model = pickle.load(f)
 
-with open('/workspaces/AK-EA-GG_ProyectoFinalDS-ML/models/label_encoder_sub_grade.pkl', 'rb') as f:
+with open('/workspaces/AK-EA-GG_ProyectoFinalDS-ML/src/label_encoder_sub_grade.pkl', 'rb') as f:
     le_sub_grade = pickle.load(f)
 
 # =====================
@@ -52,38 +47,49 @@ else:
     # Inputs del usuario
     # =====================
     loan_amnt = st.number_input('Monto del préstamo (USD)', min_value=1000, max_value=50000, step=1000)
+    term = st.selectbox('Plazo del préstamo (meses)', options=[36, 60])
     int_rate = st.number_input('Tasa de interés (%)', min_value=5.0, max_value=30.0, step=0.1, format="%.2f")
+    sub_grade = st.selectbox('Sub-Grado crediticio', options=le_sub_grade.classes_)
+    emp_length = st.slider('Años de experiencia laboral', min_value=0, max_value=10)
+    home_ownership = st.selectbox('Tipo de tenencia de vivienda', options=['ANY','RENT', 'OWN', 'MORTGAGE'])
     annual_inc = st.number_input('Ingreso anual (USD)', min_value=10000, max_value=200000, step=1000)
-    dti = st.number_input('Ratio deuda/ingreso (%)', min_value=0.0, max_value=40.0, step=0.1)
+    verifiaction_status = st.selectbox('Estado de verificación', options=['Not Verified','Source Verified', 'Verified'])
+    issue_year = st.selectbox('Año de emisión', options=[2015, 2016])
+    issue_month = st.selectbox('Mes de emisión', options=list(range(1, 13)))
+    purpose = st.selectbox('Propósito del préstamo', options=['car','credit_card', 'debt_consolidation','home_improvement','house', 'major_purchase', 'medical', 'moving', 'other', 'renewable_energy', 'small_business', 'vacation'])
+    earliest_cr_line_year = st.number_input('Año de la primera línea de crédito', min_value=1950, max_value=2016, step=1)
+    earliest_cr_line_month = st.selectbox('Mes de la primera línea de crédito', options=list(range(1, 13)))
     open_acc = st.number_input('Cuentas abiertas', min_value=0, max_value=50, step=1)
     pub_rec = st.number_input('Registros públicos negativos', min_value=0, max_value=10, step=1)
     revol_bal = st.number_input('Crédito rotativo (USD)', min_value=0, max_value=100000, step=500)
     revol_util = st.number_input('Uso del crédito rotativo (%)', min_value=0.0, max_value=150.0, step=0.1)
     total_acc = st.number_input('Total de cuentas de crédito', min_value=0, max_value=100, step=1)
-    mort_acc = st.number_input('Número de hipotecas', min_value=0, max_value=20, step=1)
-    pub_rec_bankruptcies = st.number_input('Bancarrotas públicas', min_value=0, max_value=5, step=1)
-    issue_year = st.selectbox('Año de emisión', options=[2015, 2016])
-    issue_month = st.selectbox('Mes de emisión', options=list(range(1, 13)))
-    earliest_cr_line_year = st.number_input('Año de la primera línea de crédito', min_value=1950, max_value=2025, step=1)
-    earliest_cr_line_month = st.selectbox('Mes de la primera línea de crédito', options=list(range(1, 13)))
-    sub_grade = st.selectbox('Sub-Grado crediticio', options=le_sub_grade.classes_)
-    term = st.selectbox('Plazo del préstamo (meses)', options=[36, 60])
-    zip_code = st.number_input('Registros públicos negativos', min_value=10000, max_value=99999, step=1)
-    emp_length = st.slider('Años de experiencia laboral', min_value=0, max_value=10)
     initial_list_status = st.selectbox('Estado inicial del listado', options=['w', 'f'])
-    home_ownership = st.selectbox('Tipo de tenencia de vivienda', options=['ANY','RENT', 'OWN', 'MORTGAGE'])
-    verifiaction_status = st.selectbox('Estado de verificación', options=['Not Verified','Source Verified', 'Verified'])
-    purpose = st.selectbox('Estado de verificación', options=['car','credit_card', 'debt_consolidation','home_improvement',''])
+    mort_acc = st.number_input('Número de hipotecas', min_value=0, max_value=20, step=1)
+    pub_rec_bankruptcies = st.number_input('Bancarrotas públicas', min_value=0, max_value=5, step=1) 
+    zip_code = st.number_input('Código Postal', min_value=10000, max_value=99999, step=1)
+    
 
     if st.button('Predecir Riesgo'):
         sub_grade_encoded = le_sub_grade.transform([sub_grade])[0]
         issue_d_scaled = issue_year + (issue_month - 1) / 12
         earliest_cr_line_scaled = earliest_cr_line_year + (earliest_cr_line_month - 1) / 12
+        # Convertir tasa anual a mensual
+        r = (int_rate / 100) / 12
+        # Número de pagos
+        n = term
+        # Calcular el pago mensual
+        installment = (loan_amnt * r) / (1 - (1 + r) ** -n)
+        # Calcular ingreso mensual
+        monthly_income = annual_inc / 12
+        # Calcular DTI
+        dti = (installment / monthly_income) * 100
 
         input_data = pd.DataFrame([{
             'loan_amnt': loan_amnt,
             'term': term,
             'int_rate': int_rate,
+            'installment': installment,
             'sub_grade': sub_grade_encoded,
             'emp_length': emp_length,
             'annual_inc': annual_inc,
@@ -99,6 +105,7 @@ else:
             'zip_code': zip_code,
             'earliest_cr_line_scaled': earliest_cr_line_scaled,
             'issue_d_scaled': issue_d_scaled,
+            'densidad_crediticia': total_acc / open_acc,
             'home_ownership_ANY': int(home_ownership == 'ANY'),
             'home_ownership_MORTGAGE': int(home_ownership == 'MORTGAGE'),
             'home_ownership_OWN': int(home_ownership == 'OWN'),
@@ -106,6 +113,18 @@ else:
             'verification_status_Not Verified': int(home_ownership == 'Not Verified'),
             'verification_status_Source Verified': int(home_ownership == 'Source Verified'),
             'verification_status_Verified': int(home_ownership == 'Verified'),
+            'purpose_car': int(home_ownership == 'car'),
+            'purpose_credit_card': int(home_ownership == 'credit_card'),
+            'purpose_debt_consolidation': int(home_ownership == 'debt_consolidation'),
+            'purpose_home_improvement': int(home_ownership == 'home_improvement'),
+            'purpose_house': int(home_ownership == 'house'),
+            'purpose_major_purchase': int(home_ownership == 'major_purchase'),
+            'purpose_medical': int(home_ownership == 'medical'),
+            'purpose_moving': int(home_ownership == 'moving'),
+            'purpose_other': int(home_ownership == 'other'),
+            'purpose_renewable_energy': int(home_ownership == 'renewable_energy'),
+            'purpose_small_business': int(home_ownership == 'small_business'),
+            'purpose_vacation': int(home_ownership == 'vacation')
         }])
 
         pred_prob = model.predict_proba(input_data)[0][1]
