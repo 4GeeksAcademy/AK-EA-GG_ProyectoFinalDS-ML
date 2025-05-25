@@ -59,7 +59,7 @@ else:
     purpose = st.selectbox('Propósito del préstamo', options=['car','credit_card', 'debt_consolidation','home_improvement','house', 'major_purchase', 'medical', 'moving', 'other', 'renewable_energy', 'small_business', 'vacation'])
     earliest_cr_line_year = st.number_input('Año de la primera línea de crédito', min_value=1950, max_value=2016, step=1)
     earliest_cr_line_month = st.selectbox('Mes de la primera línea de crédito', options=list(range(1, 13)))
-    open_acc = st.number_input('Cuentas abiertas', min_value=0, max_value=50, step=1)
+    open_acc = st.number_input('Cuentas abiertas', min_value=1, max_value=50, step=1)
     pub_rec = st.number_input('Registros públicos negativos', min_value=0, max_value=10, step=1)
     revol_bal = st.number_input('Crédito rotativo (USD)', min_value=0, max_value=100000, step=500)
     revol_util = st.number_input('Uso del crédito rotativo (%)', min_value=0.0, max_value=150.0, step=0.1)
@@ -84,6 +84,8 @@ else:
         monthly_income = annual_inc / 12
         # Calcular DTI
         dti = (installment / monthly_income) * 100
+        #densidad de credito
+        densidad_crediticio = total_acc / open_acc
 
         input_data = pd.DataFrame([{
             'loan_amnt': loan_amnt,
