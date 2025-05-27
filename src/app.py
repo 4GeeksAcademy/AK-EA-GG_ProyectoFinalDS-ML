@@ -67,7 +67,7 @@ else:
     initial_list_status = st.selectbox('Estado inicial del listado', options=['w', 'f'])
     mort_acc = st.number_input('Número de hipotecas', min_value=0, max_value=20, step=1)
     pub_rec_bankruptcies = st.number_input('Bancarrotas públicas', min_value=0, max_value=5, step=1) 
-    zip_code = st.number_input('Código Postal', min_value=10000, max_value=99999, step=1)
+    zip_code = st.selectbox('Código Postal', options=['70466', '30723', '22690','48052','813','5113','29597','11650','93700','86630'])
     
 
     if st.button('Predecir Riesgo'):
@@ -96,11 +96,9 @@ else:
             'emp_length': emp_length,
             'annual_inc': annual_inc,
             'dti': dti,
-            'open_acc': open_acc,
             'pub_rec': pub_rec,
             'revol_bal': revol_bal,
             'revol_util': revol_util,
-            'total_acc': total_acc,
             'initial_list_status': 0 if initial_list_status == 'w' else 1,
             'mort_acc': mort_acc,
             'pub_rec_bankruptcies': pub_rec_bankruptcies,
