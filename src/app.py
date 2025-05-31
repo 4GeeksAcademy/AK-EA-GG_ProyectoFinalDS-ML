@@ -6,10 +6,10 @@ import pickle
 # =====================
 # Cargar modelo y encoder
 # =====================
-with open('/workspaces/AK-EA-GG_ProyectoFinalDS-ML/src/best_xgb_final.pkl', 'rb') as f:
+with open('/workspaces/AK-EA-GG_ProyectoFinalDS-ML/models/best_xgb_final.pkl', 'rb') as f:
     model = pickle.load(f)
 
-with open('/workspaces/AK-EA-GG_ProyectoFinalDS-ML/src/label_encoder_sub_grade.pkl', 'rb') as f:
+with open('/workspaces/AK-EA-GG_ProyectoFinalDS-ML/models/label_encoder_sub_grade.pkl', 'rb') as f:
     le_sub_grade = pickle.load(f)
 
 # =====================
@@ -102,7 +102,7 @@ else:
             'initial_list_status': 0 if initial_list_status == 'w' else 1,
             'mort_acc': mort_acc,
             'pub_rec_bankruptcies': pub_rec_bankruptcies,
-            'zip_code': zip_code,
+            'zip_code': int(zip_code),
             'earliest_cr_line_scaled': earliest_cr_line_scaled,
             'issue_d_scaled': issue_d_scaled,
             'densidad_crediticia': total_acc / open_acc,
