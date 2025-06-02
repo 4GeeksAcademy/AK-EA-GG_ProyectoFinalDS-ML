@@ -6,10 +6,10 @@ import pickle
 # =====================
 # Cargar modelo y encoder
 # =====================
-with open('../models/best_xgb_final.pkl', 'rb') as f:
+with open('/workspaces/AK-EA-GG_ProyectoFinalDS-ML/models/best_xgb_final.pkl', 'rb') as f:
     model = pickle.load(f)
 
-with open('../models/label_encoder_sub_grade.pkl', 'rb') as f:
+with open('/workspaces/AK-EA-GG_ProyectoFinalDS-ML/models/label_encoder_sub_grade.pkl', 'rb') as f:
     le_sub_grade = pickle.load(f)
 
 # =====================
