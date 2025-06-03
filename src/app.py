@@ -7,7 +7,7 @@ import pickle
 # Cargar modelo y encoder
 # =====================
 with open('/workspaces/AK-EA-GG_ProyectoFinalDS-ML/models/best_xgb_final.pkl', 'rb') as f:
-    model = pickle.load(f)
+    model, optimal_threshold = pickle.load(f)
 
 with open('/workspaces/AK-EA-GG_ProyectoFinalDS-ML/models/label_encoder_sub_grade.pkl', 'rb') as f:
     le_sub_grade = pickle.load(f)
@@ -30,7 +30,7 @@ if uploaded_file is not None:
 
     # Predecir
     y_probs = model.predict_proba(df_csv)[:, 1]
-    y_preds = model.predict(df_csv)
+    y_preds = (y_probs >= optimal_threshold).astype(int)
     df_csv['prob_default'] = y_probs
     df_csv['predicted_class'] = y_preds
 
@@ -128,7 +128,7 @@ else:
         }])
 
         pred_prob = model.predict_proba(input_data)[0][1]
-        pred_class = model.predict(input_data)[0]
+        pred_class = int(pred_prob >= optimal_threshold)
 
         st.subheader("Resultado de la predicción")
         if pred_class == 1:
