@@ -1,12 +1,12 @@
 import streamlit as st
-import numpy as np
 import pandas as pd
 import pickle
 
 # =====================
-# Cargar modelo y encoder
+# Cargar modelo y encoder (nos quedamos con el modelo
+# sin hiperparametrizar, es levemente más preciso)
 # =====================
-with open('/workspaces/AK-EA-GG_ProyectoFinalDS-ML/models/best_xgb_final.pkl', 'rb') as f:
+with open('/workspaces/AK-EA-GG_ProyectoFinalDS-ML/models/xgb_model.pkl', 'rb') as f:
     model, optimal_threshold = pickle.load(f)
 
 with open('/workspaces/AK-EA-GG_ProyectoFinalDS-ML/models/label_encoder_sub_grade.pkl', 'rb') as f:
@@ -41,6 +41,7 @@ if uploaded_file is not None:
     # Descargar resultados
     csv_out = df_csv.to_csv(index=False).encode('utf-8')
     st.download_button("📥 Descargar resultados como CSV", data=csv_out, file_name="predicciones_con_riesgo.csv", mime='text/csv')
+    st.write("Calificamos con un 0 a los clientes no riesgosos y con un 1 a los clientes riesgosos.")
 
 else:
     # =====================
