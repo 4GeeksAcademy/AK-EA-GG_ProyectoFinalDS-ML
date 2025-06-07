@@ -15,7 +15,7 @@ with open('/workspaces/AK-EA-GG_ProyectoFinalDS-ML/models/label_encoder_sub_grad
 # =====================
 # Título de la App
 # =====================
-st.title("💳 Predicción de riesgo de crédito")
+st.title("💳 Better Pay You Bill!")
 st.write("Ingrese los datos del solicitante o cargue un archivo CSV para evaluar el riesgo de incumplimiento de préstamo.")
 
 # =====================
